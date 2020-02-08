@@ -4,7 +4,7 @@ class Game:
 	def __init__(self, rows: int, cols: int):
 		self.rows = rows
 		self.cols = cols
-		self.turn = "black"
+		self.turn = 'black'
 		self.current_board = self.make_board(self.turn)
 
 
@@ -13,7 +13,7 @@ class Game:
 		for rows in range(self.rows):
 			board.append([])
 			for cols in range(self.cols):
-				board[rows].append(None)
+				board[rows].append('green3')
 
 		board[int(rows/2-1)][int(cols/2-1)] = start
 		for x in range(len(board)):
@@ -33,6 +33,9 @@ class Game:
 
 	def get_board(self) -> [[str]]:
 		return self.current_board
+
+	def get_turn(self) -> str:
+		return self.turn
 
 	def switch_turn(self) -> str:
 		self.turn = self.get_opposite_turn(self.turn)

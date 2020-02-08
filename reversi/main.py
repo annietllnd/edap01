@@ -10,11 +10,12 @@ class GUI(Frame):
 
 	def __init__(self):
 		super().__init__()
-
+		self.reversi = model.Game(NBR_ROWS, NBR_COLS)
 		self._counter = 0
 		self._rows = NBR_ROWS
 		self._cols = NBR_COLS
 		self.board = [None for i in range(NBR_COLS*NBR_ROWS)]
+		self.reversi_board = self.reversi.get_board()
 		self.display = Canvas(self.master, width=WIDTH, height=HEIGHT)
 
 		self.initUI()
@@ -38,14 +39,14 @@ class GUI(Frame):
 		dist = WIDTH/(NBR_COLS)
 		for i in range(NBR_ROWS):
 			for j in range(NBR_COLS):
-				self.board[i*NBR_ROWS+j] = self.display.create_rectangle(j*dist, i*dist, (j+1)*dist, (i+1)*dist, fill="green3", tags="rect")
+				self.board[i*NBR_ROWS+j] = self.display.create_rectangle(j*dist, i*dist, (j+1)*dist, (i+1)*dist, fill=self.reversi_board[i][j], tags="rect")
 				self.display.tag_bind(self.board[i*NBR_ROWS+j],"<Button-1>",self.onClick)
 		self.display.pack()
 
-		self.display.itemconfig(self.board[27], fill='white')
-		self.display.itemconfig(self.board[28], fill='black')
-		self.display.itemconfig(self.board[35], fill='black')
-		self.display.itemconfig(self.board[36], fill='white')
+		self.display.itemconfig(self.board[27], fill=self.reversi.get_turn())
+		self.display.itemconfig(self.board[28], fill=self.reversi.get_opposite_turn(self.reversi.get_turn()))
+		self.display.itemconfig(self.board[35], fill=self.reversi.get_opposite_turn(self.reversi.get_turn()))
+		self.display.itemconfig(self.board[36], fill=self.reversi.get_turn())
 
 
 
