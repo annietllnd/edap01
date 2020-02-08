@@ -1,4 +1,5 @@
 from tkinter import *
+import model
 
 NBR_ROWS = 8
 NBR_COLS = 8
@@ -66,14 +67,7 @@ class GUI(Frame):
 		print("Saved!")
 
 	def onClick(self, evt=None):
-		if(self._counter == 0):
-			self.display.itemconfig(self.display.find_withtag(CURRENT), fill='white')
-			self._counter = 1
-		else:
-			self.display.itemconfig(self.display.find_withtag(CURRENT), fill='black')
-			self._counter = 0
-
-
+		self.display.itemconfig(self.display.find_withtag(CURRENT), fill="white")
 
 
 def main(): 
