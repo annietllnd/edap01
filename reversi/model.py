@@ -34,6 +34,12 @@ class Game:
 	def get_board(self) -> [[str]]:
 		return self.current_board
 
+	def get_rows(self) -> int:
+		return self.rows
+
+	def get_cols(self) -> int:
+		return self.cols
+
 	def get_turn(self) -> str:
 		return self.turn
 
@@ -45,14 +51,3 @@ class Game:
 
 	def get_score(self, turn: str) -> int:
 		return sum(row.count(turn) for row in self.get_board())
-
-
-def main():
-	game = Game(3, 3)
-	print(game.get_score('black'))
-	print(game.make_move(1,2,'white'))
-	print(game.get_board()[1][2])
-
-if __name__ == "__main__":
-	main()
-

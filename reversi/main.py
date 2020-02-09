@@ -1,5 +1,6 @@
 from tkinter import *
 import model
+import reversi
 
 NBR_ROWS = 8
 NBR_COLS = 8
@@ -8,75 +9,68 @@ WIDTH = 500
 
 class GUI(Frame):
 
-	def __init__(self):
-		super().__init__()
-		self.reversi = model.Game(NBR_ROWS, NBR_COLS)
-		self._counter = 0
-		self._rows = NBR_ROWS
-		self._cols = NBR_COLS
-		self.board = [None for i in range(NBR_COLS*NBR_ROWS)]
-		self.reversi_board = self.reversi.get_board()
-		self.display = Canvas(self.master, width=WIDTH, height=HEIGHT)
+	def __init__(self, root):
 
+		super().__init__()
+
+		self.root = root
+		self.game = model.Game(NBR_ROWS, NBR_COLS)
+		self.game_board = self.game.get_board()
+
+		self.root.geometry("600x600")
+		self._reversi = reversi.Reversi(self.game, self.root, HEIGHT, WIDTH)
+		self.window = self._reversi.get_board()
+		
 		self.initUI()
 
 	def initUI(self):
 
-		self.master.title("Othello")
+		self.root.title("Reversi")
 
-		menubar = Menu(self.master)
-		self.master.config(menu=menubar)
-
-		self.makeBoard()		
+		menubar = Menu(self.root)
+		self.root.config(menu=menubar)
 
 		fileMenu = Menu(menubar)
 		fileMenu.add_command(label="Exit", command=self.onExit)
 		menubar.add_cascade(label="Menu", menu=fileMenu)
 		fileMenu.add_command(label="Save", command=self.onSave)
 
-	def makeBoard(self):
+		self._reversi.makeBoard()
 
-		dist = WIDTH/(NBR_COLS)
-		for i in range(NBR_ROWS):
-			for j in range(NBR_COLS):
-				self.board[i*NBR_ROWS+j] = self.display.create_rectangle(j*dist, i*dist, (j+1)*dist, (i+1)*dist, fill=self.reversi_board[i][j], tags="rect")
-				self.display.tag_bind(self.board[i*NBR_ROWS+j],"<Button-1>",self.onClick)
-		self.display.pack()
-
-		self.display.itemconfig(self.board[27], fill=self.reversi.get_turn())
-		self.display.itemconfig(self.board[28], fill=self.reversi.get_opposite_turn(self.reversi.get_turn()))
-		self.display.itemconfig(self.board[35], fill=self.reversi.get_opposite_turn(self.reversi.get_turn()))
-		self.display.itemconfig(self.board[36], fill=self.reversi.get_turn())
-
-
-
-		
-
-
-		#Ladda in lista
-		#Dialogruta där man får välja färg
-		#Assigna färgen till spelare
-		#Rita upp startpositionen (förslagsvis i listan)
-		#
 
 	def onExit(self):
 
 		self.quit()
 
+#	def choosePlayer(self):
+#		var = IntVar()
+#		blackButton = Radiobutton(self.root, text="Black", variable=var, value=1, command=self._reversi.choosePlayer)
+#		blackButton.pack()
+#		whiteButton = Radiobutton(self.root, text="White", variable=var, value=2, command=self._reversi.choosePlayer)
+#		whiteButton.pack()#
+
+#		if(var.get() == 1):
+#			self.turn = 'black'
+#		elif(var.get() == 2)
+#			self.turn = 'white'#
+
+#		blackButton.pack_forget()
+#		whiteButton.pack_forget()
+
+
+
+
+
 	def onSave(self):
 
 		print("Saved!")
-
-	def onClick(self, evt=None):
-		self.display.itemconfig(self.display.find_withtag(CURRENT), fill="white")
 
 
 def main(): 
 
 	root = Tk()
-	root.geometry("600x600")
-	app = GUI()
-	root.mainloop()
+	app = GUI(root)
+	app.mainloop()
 
 
 if __name__ == "__main__":
