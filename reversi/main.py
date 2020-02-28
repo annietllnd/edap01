@@ -20,12 +20,13 @@ class GUI(Frame):
 		self.root.geometry("600x600")
 		self._reversi = reversi.Reversi(self.game, self.root, HEIGHT, WIDTH)
 		self.window = self._reversi.get_board()
-		
 		self.initUI()
+		self.initGame()
 
 	def initUI(self):
 
 		self.root.title("Reversi")
+
 
 		menubar = Menu(self.root)
 		self.root.config(menu=menubar)
@@ -35,35 +36,46 @@ class GUI(Frame):
 		menubar.add_cascade(label="Menu", menu=fileMenu)
 		fileMenu.add_command(label="Save", command=self.onSave)
 
-		self._reversi.makeBoard()
 
 
 	def onExit(self):
 
 		self.quit()
 
-#	def choosePlayer(self):
-#		var = IntVar()
-#		blackButton = Radiobutton(self.root, text="Black", variable=var, value=1, command=self._reversi.choosePlayer)
-#		blackButton.pack()
-#		whiteButton = Radiobutton(self.root, text="White", variable=var, value=2, command=self._reversi.choosePlayer)
-#		whiteButton.pack()#
-
-#		if(var.get() == 1):
-#			self.turn = 'black'
-#		elif(var.get() == 2)
-#			self.turn = 'white'#
-
-#		blackButton.pack_forget()
-#		whiteButton.pack_forget()
-
-
-
 
 
 	def onSave(self):
 
 		print("Saved!")
+
+	def initGame(self):
+		window = Toplevel(master = self.root) 
+		window.title('Choose player')
+		window.geometry("200x200")
+		window.attributes('-topmost', 'true')
+
+		var = IntVar()
+		var.set(1)
+
+		def quit_loop():
+		    print("Selection:",var.get())
+		    selection = var.get()
+		    window.quit()
+		    self._reversi.makeBoard()
+		    self.game.choose_player(selection)
+
+		    window.withdraw()
+
+		Label(window, text = "Select color to play").grid(row=0, sticky=W)
+		Radiobutton(window, text = "White", variable=var, value = -1).grid(row=1, sticky=W)
+		Radiobutton(window, text = "Black", variable=var, value = 1).grid(row=2, sticky=W)
+		Button(window, text = "OK", command=quit_loop).grid(row=3, sticky=W)
+
+		window.mainloop()
+
+
+		
+
 
 
 def main(): 

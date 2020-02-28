@@ -22,17 +22,25 @@ class Reversi:
 		dist = self._width/(self._rows)
 		for i in range(self._rows):
 			for j in range(self._cols):
-				self._rectangles[i*NBR_ROWS+j] = self._board.create_rectangle(j*dist, i*dist, (j+1)*dist, (i+1)*dist, fill=self._game_board[i][j])
+				self._rectangles[i*NBR_ROWS+j] = self._board.create_rectangle(j*dist, i*dist, (j+1)*dist, (i+1)*dist, fill=self.get_color(self._game_board[i][j].get_state()))
 				self._board.tag_bind(self._rectangles[i*NBR_ROWS+j],"<Button-1>",self.onClick)
 		self._board.pack()
 
-		self._board.itemconfig(self._rectangles[27], fill=self._game.get_turn())
-		self._board.itemconfig(self._rectangles[28], fill=self._game.get_opposite_turn(self._game.get_turn()))
-		self._board.itemconfig(self._rectangles[35], fill=self._game.get_opposite_turn(self._game.get_turn()))
-		self._board.itemconfig(self._rectangles[36], fill=self._game.get_turn())
+		self._board.itemconfig(self._rectangles[27], fill=self.get_color(self._game.get_turn()))
+		self._board.itemconfig(self._rectangles[28], fill=self.get_color(self._game.get_opposite_turn(self._game.get_turn())))
+		self._board.itemconfig(self._rectangles[35], fill=self.get_color(self._game.get_opposite_turn(self._game.get_turn())))
+		self._board.itemconfig(self._rectangles[36], fill=self.get_color(self._game.get_turn()))
 
 	def onClick(self, evt=None):
-		self._board.itemconfig(self._board.find_withtag(CURRENT), fill="white")
+		self._board.itemconfig(self._board.find_withtag(CURRENT), fill=self._game.get_turn())
+
+	def get_color(self, state: int):
+		if state == -1:
+			return "white"
+		elif state == 1:
+			return "black"
+		elif state == 0:
+			return "green3"
 
 		#Ladda in lista
 		#Dialogruta där man får välja färg
