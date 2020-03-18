@@ -1,7 +1,12 @@
 package control;
 
+/*IMPORTANT NOTE
+* This file was implemented by the course responsibles for the course EDAP01 at LTH,
+* I take no credit in their work.
+*/
+
 /*
- * This interface provides the graphics class (RobotLocalizationViewer) with the 
+ * This interface provides the graphics class (RobotLocalizationViewer) with the
  * necessary access points to the data it wants to display.
  * If you want to use the viewer, have some class implement this interface, which 
  * you could see as a wrapper to your internal model for the transition and sensor 

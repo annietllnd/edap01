@@ -1,5 +1,10 @@
 package model;
 
+/*IMPORTANT NOTE
+ * This file was implemented by the course responsibles for the course EDAP01 at LTH,
+ * I take no credit in their work.
+ */
+
 import control.EstimatorInterface;
 
 public class DummyLocalizer implements EstimatorInterface {

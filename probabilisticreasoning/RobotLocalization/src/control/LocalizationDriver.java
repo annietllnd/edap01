@@ -1,5 +1,10 @@
 package control;
 
+/*IMPORTANT NOTE
+ * This file was implemented by the course responsibles for the course EDAP01 at LTH,
+ * I take no credit in their work.
+ */
+
 import view.*;
 
 public class LocalizationDriver extends Thread {
