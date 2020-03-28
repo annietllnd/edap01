@@ -40,11 +40,11 @@ public class Localizer implements EstimatorInterface {
 	public int getNumRows() {
 		return rows;
 	}
-	
+
 	public int getNumCols() {
 		return cols;
 	}
-	
+
 	public int getNumHead() {
 		return head;
 	}
@@ -150,10 +150,17 @@ public class Localizer implements EstimatorInterface {
 		return abs(x1-x2);
 	}
 
-	public double getOrXY( int rX, int rY, int x, int y, int h) {
+	public double getOrXY(int rX, int rY, int x, int y, int h) {
 
 		int dX = getDiff(x, rX);
 		int dY = getDiff(y, rY);
+
+		int n_Ls = evaluateNeighbours(1, x, y, h);
+		int n_L2s = evaluateNeighbours(2, x, y, h);
+
+		if(rX == -1 && rY == -1) {
+			return 1-(L+n_Ls*L_s+n_L2s*L_s2);
+		}
 
 		if(dX == 0 && dY == 0) {
 			return L;
@@ -161,13 +168,14 @@ public class Localizer implements EstimatorInterface {
 			return L_s;
 		} else if (dX <= 2 && dY <= 2) {
 			return L_s2;
+		} else {
+			return 0;
 		}
-		return 0;
 	}
 
 
 	public int[] getCurrentTrueState() {
-		
+
 		int[] ret = new int[3];
 		ret[1] = currentPosX;
 		ret[0] = currentPosY;
@@ -178,6 +186,7 @@ public class Localizer implements EstimatorInterface {
 
 
 	public int[] getCurrentReading() {
+
 		int[] ret = senseLocation(currentPosX, currentPosY, currentHead);
 		return ret;
 	}
@@ -188,14 +197,19 @@ public class Localizer implements EstimatorInterface {
 	public int[] senseLocation(int x, int y, int h) {
 		double rnd = rand.nextDouble();
 		Position pos;
+		int n_Ls = evaluateNeighbours(1, x, y, h);
+		int n_L2s = evaluateNeighbours(2, x, y, h);
+
 		int[] ret = new int[2];
 		if(rnd <= L) {
 			pos = new Position(x, y, h);
-		} else if(rnd <= (L + L_s*5)) {
+		} else if(rnd <= (L_s*n_Ls)) {
 			pos = getAdjacentPosition(1, currentPosX, currentPosY, currentHead);
-		} else if(rnd <= (L + L_s*8 + L_s2*7)) {
+		} else if(rnd <= (L_s2*n_L2s)) {
 			pos = getAdjacentPosition(2, currentPosX, currentPosY, currentHead);
-		} else pos = new Position(-1, -1, h);
+		} else {
+			pos = new Position(-1, -1, h);
+		}
 
 		if(pos.getX() == -1) {
 			ret = null;
@@ -205,6 +219,51 @@ public class Localizer implements EstimatorInterface {
 		}
 		return ret;
 
+	}
+
+	public int evaluateNeighbours(int layer, int x, int y, int h) {
+		if(isInCorner(x, y)) {
+			switch (layer) {
+				case 1:
+					return 3;
+				case 2:
+					return 5;
+			}
+
+		} else if (isAtWall(x, y)) {
+			if(x == 1 || y == 1 || x <= this.getNumCols()-1 || y <= this.getNumRows()-1) {
+				switch (layer) {
+					case 1:
+						return 5;
+					case 2:
+						return 6;
+				}
+			}
+			switch (layer) {
+				case 1:
+					return 5;
+				case 2:
+					return 9;
+			}
+
+		} else {
+			if(x == 1 && y <= 1 || x <= this.getNumCols()-2 || y <= this.getNumRows()-2) {
+				switch (layer) {
+					case 1:
+						return 8;
+					case 2:
+						return 7;
+				}
+			}
+			switch (layer) {
+				case 1:
+					return 8;
+				case 2:
+					return 16;
+			}
+		}
+
+		return 0;
 	}
 
 	public Position getAdjacentPosition(int layer, int x, int y, int h) {
@@ -230,7 +289,7 @@ public class Localizer implements EstimatorInterface {
 			int xPos = candidates[rnd].getX();
 			int yPos = candidates[rnd].getY();
 
-			if(validMove(xPos, yPos) && count < 7) {
+			if(validMove(xPos, yPos)) {
 				valid = true;
 				result = candidates[rnd];
 			} else {
@@ -309,24 +368,24 @@ public class Localizer implements EstimatorInterface {
 		int move;
 		if (isAtWall(currentPosX, currentPosY) && cornerIndex(currentPosX, currentPosY) == -1) {
 			if (currentPosX == 0) {
-					moves.add(NORTH);
-					moves.add(SOUTH);
-					moves.add(EAST);
+				moves.add(NORTH);
+				moves.add(SOUTH);
+				moves.add(EAST);
 			}
 			if (currentPosX == getNumCols()-1) {
-					moves.add(NORTH);
-					moves.add(SOUTH);
-					moves.add(WEST);
+				moves.add(NORTH);
+				moves.add(SOUTH);
+				moves.add(WEST);
 			}
 			if (currentPosY == 0) {
-					moves.add(EAST);
-					moves.add(WEST);
-					moves.add(SOUTH);
+				moves.add(EAST);
+				moves.add(WEST);
+				moves.add(SOUTH);
 			}
 			if (currentPosY == getNumRows()-1) {
-					moves.add(EAST);
-					moves.add(WEST);
-					moves.add(NORTH);
+				moves.add(EAST);
+				moves.add(WEST);
+				moves.add(NORTH);
 
 			}
 
@@ -429,9 +488,9 @@ public class Localizer implements EstimatorInterface {
 		}
 
 		return res;
- 	}
+	}
 
- 	public double[][] matrixNormalization(double[][] A) {
+	public double[][] matrixNormalization(double[][] A) {
 		double[][] res = new double[A.length][A[0].length];
 		double sum = 0;
 
@@ -499,12 +558,16 @@ public class Localizer implements EstimatorInterface {
 	}
 
 	public void update() {
-		clicks++;
+
 		int[] est = getCurrentReading();
+
 		move();
 
 
 		if(est != null) {
+			clicks++;
+			System.out.println("ACTUAL: " + currentPosX + ", " + currentPosY);
+			System.out.println("ESTIMATION: " + est[0] + ", " + est[1]);
 			double[][] O = generateO(est);
 			double[][] OTT = matrixMultiplication(O, TT);
 			double[][] OTTf = matrixMultiplication(OTT, f);
@@ -514,21 +577,21 @@ public class Localizer implements EstimatorInterface {
 			int dY = getDiff(currentPosY, est[1]);
 
 			manhattan += dX+dY;
+			System.out.println("mean distance in iteration " + Math.round(clicks) + " = " + manhattan/clicks);
+
 
 		} else {
-			manhattan += 0;
 			double[][] TTf = matrixMultiplication(TT, f);
 			f = matrixNormalization(TTf);
 		}
-		System.out.println("mean distance = " + manhattan/clicks);
 
 
 
 
 
 	}
-	
-	
+
+
 }
 
 class Position {
