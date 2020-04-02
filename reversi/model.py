@@ -11,6 +11,8 @@ class Game:
 		self.human = self.turn
 		self.current_board = self.make_board()
 		self.search = Search(self)
+		self.start_time = 0
+		
 
 	def print_board(self, board):
 		for row in range(0, self.rows):
@@ -39,13 +41,15 @@ class Game:
 		return copy.deepcopy(board)
 
 	def make_move(self, board, row: int, col: int, turn: int):
-		_, tilesToFlip = self.valid_moves(board, row, col, turn)
-		if tilesToFlip == []:
+		_, tiles_per_move = self.valid_moves(board, row, col, turn)
+
+		if tiles_per_move == []:
 			return False
 
-		tilesToFlip = tilesToFlip[0]
+		print(tiles_per_move)
+		tiles_per_move = tiles_per_move[0] if tiles_per_move[0] != [] else tiles_per_move[1]
 		board[row][col].set_state(turn)
-		for x, y in tilesToFlip:
+		for x, y in tiles_per_move:
 			board[x][y].set_state(turn)
 		return True
 
@@ -85,12 +89,11 @@ class Game:
 			n_row = n_row - row
 			n_col = n_col - col
 
-			valid, tilesToFlip = self.is_valid_directional_move(row, col, n_row, n_col, turn)
+			valid, tileToFlip = self.is_valid_directional_move(row, col, n_row, n_col, turn)
 
 			if(valid and n.get_state() != tile.get_state()):
 				valid_neighbours.append(n)
-				tiles_per_move.append(tilesToFlip)
-			
+				tiles_per_move.append(tileToFlip)
 		for t in valid_neighbours:
 			state = t.get_state()
 	
@@ -98,6 +101,7 @@ class Game:
 				move_row, move_col = t.get_coordinates() 
 				if not (move_row == row and move_col == col):
 					coordinates.append((row, col))
+		
 		return coordinates, tiles_per_move
 
 
@@ -200,13 +204,18 @@ class Game:
 			self.player = 1
 			return 'player'
 
-	def get_player_move(self, player):
+	def get_player_move(self, player, suggestions):
 		DIGITS = '1 2 3 4 5 6 7 8'.split()
 		while True:
 			print("Enter your move as coordinates 'xy', or type 'quit' to end the game. 'X' show possible legal moves.")
 			move = input().lower()
 			if move == 'quit':
 				return 'quit'
+			if move == 'x':
+				print("Try one of these coordinates:")
+				for move in suggestions[0]:
+					print(move[0]+1, move[1]+1)
+				continue
 			if len(move) == 2 and move[0] in DIGITS and move[1] in DIGITS:
 				x = int(move[0]) - 1
 				y = int(move[1]) - 1
@@ -216,12 +225,15 @@ class Game:
 				else:
 					break
 			else:
-				print("Not a valid move.")
+				if move != 'x':
+					print("Not a valid move")
+				else:
+					print("Try a new move")
 		return [x, y]
 
-	def get_computer_move(self):
-		_, best_move = self.search.minmax(self.get_board(), 4, 10000, -10000, self.computer, self.computer)
-		print("Best move: ", best_move)
+	def get_computer_move(self, max_time):
+		depth = max(4, max_time - self.start_time)
+		_, best_move = self.search.minmax(self.get_board(), depth, 10000, -10000, self.computer, self.computer)
 		return best_move
 
 
@@ -272,7 +284,6 @@ class Search:
 		moves, _ = self.game.get_valid_moves(board, maximizingPlayer)
 		best_move = (-1,-1)
 
-
 		if(depth == 0 or moves == []):
 			heuristic = self.heuristic(turn, moves)
 			return heuristic, best_move
@@ -319,10 +330,10 @@ def main():
 
 		while True:			
 			if turn == 'player':
-				#validMovesBoard = game.get_valid_moves(game.get_board(), player)
+				suggestions = game.get_valid_moves(game.get_board(), player)
+				#suggestions = []
 				game.print_board(game.get_board())
-				move = game.get_player_move(player)
-
+				move = game.get_player_move(player, suggestions)
 				if move == 'quit':
 					print("Thanks for playing!")
 					sys.exit()
@@ -335,7 +346,7 @@ def main():
 					turn = 'computer'
 			else:
 				input("Press Enter to see the computer\'s move.")
-				move = game.get_computer_move()
+				move = game.get_computer_move(5)
 				game.make_move(game.get_board(), move[0], move[1], computer)
 				if game.get_valid_moves(game.get_board(), player)[0] == []:
 					break
@@ -343,7 +354,7 @@ def main():
 					turn = 'player'
 
 
-		game.print_board(mainBoard)
+		game.print_board(game.get_board())
 		if(computer == -1):
 			score_computer = game.get_score(-1)
 			score_player = game.get_score(1)
@@ -352,15 +363,15 @@ def main():
 			score_player = game.get_score(-1)
 		print(f"computer scored {score_computer} points. player scored {score_player} points.")
 		if score_player > score_computer:
-			print("You beat the computer by %s points! Congratulations!" % (scores_player - scores_computer))
-		elif scores[playerTile] < scores[computerTile]:
-			print("You lost. The computer beat you by %s points." % (scores_computer - scores_player))
+			print("You beat the computer by %s points! Congratulations!" % (score_player - score_computer))
+		elif score_player < score_computer:
+			print("You lost. The computer beat you by %s points." % (score_computer - score_player))
 		else:
 			print("The game was a tie!")
 
-		if not play_again():
-			print("Thanks for playing!")
-			break
+	
+		print("Thanks for playing!")
+		break
 
 if __name__ == "__main__":
 	main()

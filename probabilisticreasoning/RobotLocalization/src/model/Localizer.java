@@ -9,7 +9,7 @@ import static java.lang.Math.abs;
 public class Localizer implements EstimatorInterface {
 
 	private int rows, cols, head, currentPosX, currentPosY, currentHead, dim;
-	private double  L, L_s, L_s2, manhattan, clicks;
+	private double  L, L_s, L_s2, manhattan, clicks, estimations;
 	Random rand = new Random();
 	private double[][] f, TT;
 	private static final int SOUTH = 2;
@@ -27,13 +27,13 @@ public class Localizer implements EstimatorInterface {
 		L = 0.1;
 		L_s = 0.05;
 		L_s2 = 0.025;
-		manhattan = clicks = 0;
+		manhattan = clicks = estimations = 0;
 		this.currentPosX = 0;
 		this.currentPosY = 0;
 		this.currentHead = 0;
 
 		for(int i = 0; i < dim; i++) {
-			f[i][0] = 1/(double)dim;
+			f[i][0] = 0.025;
 		}
 	}
 
@@ -53,26 +53,26 @@ public class Localizer implements EstimatorInterface {
 		double dX = getDiff(x, nX);
 		double dY = getDiff(y, nY);
 
-		if ((dX + dY > 1) || (dX == 0 && dY == 0)) { // step
+		if ((dX + dY > 1) || (dX == 0 && dY == 0)) {
 			return 0;
 		}
 
 		switch (nH) {
 
 			case 0:
-				if (nX != x - 1)
+				if (nY != y - 1)
 					return 0;
 				break;
 			case 1:
-				if (nY != y + 1)
-					return 0;
-				break;
-			case 2:
 				if (nX != x + 1)
 					return 0;
 				break;
+			case 2:
+				if (nY != y + 1)
+					return 0;
+				break;
 			case 3:
-				if (nY != y - 1)
+				if (nX != x - 1)
 					return 0;
 				break;
 		}
@@ -560,14 +560,16 @@ public class Localizer implements EstimatorInterface {
 	public void update() {
 
 		int[] est = getCurrentReading();
+		int oldX = currentPosX;
+		int oldY = currentPosY;
 
 		move();
 
 
 		if(est != null) {
 			clicks++;
-			System.out.println("ACTUAL: " + currentPosX + ", " + currentPosY);
-			System.out.println("ESTIMATION: " + est[0] + ", " + est[1]);
+			if(oldX == est[0] && oldY == est[1]) estimations ++;
+
 			double[][] O = generateO(est);
 			double[][] OTT = matrixMultiplication(O, TT);
 			double[][] OTTf = matrixMultiplication(OTT, f);
@@ -578,6 +580,7 @@ public class Localizer implements EstimatorInterface {
 
 			manhattan += dX+dY;
 			System.out.println("mean distance in iteration " + Math.round(clicks) + " = " + manhattan/clicks);
+			System.out.println("currently correctly classified " + Math.round(estimations) + " out of " + Math.round(clicks) + " times");
 
 
 		} else {
